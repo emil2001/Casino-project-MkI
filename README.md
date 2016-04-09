@@ -1,5 +1,1 @@
-# Casino-project-MkI
-a = intput().split()
-for i in a:
-  print(i[0]+i[1]+i[0]+" ", end = ' ')
-#You are looking at the biggest project in the world
+

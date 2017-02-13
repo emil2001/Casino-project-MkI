@@ -5,10 +5,11 @@ canv = Canvas(root, width = 700, height = 700)
 canv.pack()
 x, y = 150, 150
 vx, vy = 0, 0
+xg,yg = 100, 100
 
 def draw_field():
     global x, y
-    canv.create_rectangle(10,10,500,500,fill="white",outline="black")
+    canv.create_rectangle(0,0,500,500,fill="white",outline="black")
 draw_field()    
 def draw_pac():
     global x, y
@@ -16,9 +17,13 @@ def draw_pac():
     canv.create_oval(x-15,y-15,x+15,y+15,fill = 'yellow', tag = 'pacman')
 def draw_ghost():
     global x,y
+    canv.delete('ghost')
+    canv.create_arc([xg,yg],[xg + 50,yg + 50],start=0,extent=180,
+          style=ARC,outline="darkgreen",width=2,tag = 'ghost')
 def draw():
     global x, y
     draw_pac()
+    draw_ghost()
     canv.update()
 def moveleft(event):
     global vx,vy
@@ -41,7 +46,8 @@ root.bind('<d>', moveright)
 root.bind('<w>', moveup)
 root.bind('<s>', movedown)
 draw()
-while 1:
+def move_pacman():
+    global x,y,vx,vy
     if y-15 < 10:  
         y += 475
     if y+15 > 500:
@@ -52,7 +58,9 @@ while 1:
         x -= 475
     x+=vx
     y+=vy
+while 1:
+    move_pacman()
     draw()
     time.sleep(.01)
-    
+  
 root.mainloop()

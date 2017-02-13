@@ -1,0 +1,58 @@
+from tkinter import *
+import time
+root = Tk()
+canv = Canvas(root, width = 700, height = 700)
+canv.pack()
+x, y = 150, 150
+vx, vy = 0, 0
+
+def draw_field():
+    global x, y
+    canv.create_rectangle(10,10,500,500,fill="white",outline="black")
+draw_field()    
+def draw_pac():
+    global x, y
+    canv.delete('pacman')
+    canv.create_oval(x-15,y-15,x+15,y+15,fill = 'yellow', tag = 'pacman')
+def draw_ghost():
+    global x,y
+def draw():
+    global x, y
+    draw_pac()
+    canv.update()
+def moveleft(event):
+    global vx,vy
+    vx = -1
+    vy = 0
+def moveright(event):
+    global vx,vy
+    vx = 1
+    vy = 0
+def moveup(event):
+    global vx,vy
+    vy = -1
+    vx = 0
+def movedown(event):
+    global vx,vy
+    vy = 1
+    vx = 0
+root.bind('<a>', moveleft)
+root.bind('<d>', moveright)
+root.bind('<w>', moveup)
+root.bind('<s>', movedown)
+draw()
+while 1:
+    if y-15 < 10:  
+        y += 475
+    if y+15 > 500:
+        y -= 475    
+    if x-15 < 10:  
+        x += 475
+    if x+15 > 500:
+        x -= 475
+    x+=vx
+    y+=vy
+    draw()
+    time.sleep(.01)
+    
+root.mainloop()

@@ -7,8 +7,30 @@ canv.pack()
 x, y = 150, 150
 vxp, vyp = 0, 0
 xg, yg = 100, 100
-xp, yp = x+100, y+100
 vxg,vyg = 0,0
+grid = 30
+nvxp, nvyp = 0,0
+matr = [['' for h in range(10)] for h in range(10)]
+i,j = 0,0
+
+def field_read():
+    global x,y,grid,xp,yp,matr,i,j
+    a = open('field.txt', 'r')
+    for line in a:
+        for symb in line:
+            if symb != '\n':
+                matr[j][i] = symb
+            if symb == '1':
+                canv.create_rectangle(i*grid, j*grid, (i+1)*grid, (j+1)*grid, fill="blue", tag = 'solid')
+            if symb == '9':
+                xp = i*grid
+                yp = j*grid
+                draw_pac()
+            i += 1
+        i = 0
+        j += 1
+    canv.update()
+    a.close()
 
 def if_game_over():
     global xg, yg, xp, yp
@@ -28,9 +50,6 @@ def game_over():
 def draw_field():
     global x, y
     canv.create_rectangle(0, 0, 500, 500, fill="white", outline="black")
-
-
-draw_field()
 
 
 def draw_pac():
@@ -57,34 +76,34 @@ def draw_ghost(color):
 
 
 def draw():
-    global x, y
+    global x, y,xp,yp
     draw_pac()
-    draw_ghost('green')
+    #draw_ghost('green')
     canv.update()
 
 
 def moveleft(event):
-    global vxp, vyp
-    vxp = -1
-    vyp = 0
+    global nvxp, nvyp
+    nvxp = -1
+    nvyp = 0
 
 
 def moveright(event):
-    global vxp, vyp
-    vxp = 1
-    vyp = 0
+    global nvxp, nvyp
+    nvxp = 1
+    nvyp = 0
 
 
 def moveup(event):
-    global vxp, vyp
-    vyp = -1
-    vxp = 0
+    global nvxp, nvyp
+    nvyp = -1
+    nvxp = 0
 
 
 def movedown(event):
-    global vxp, vyp
-    vyp = 1
-    vxp = 0
+    global nvxp,nvyp
+    nvyp = 1
+    nvxp = 0
 
 def moveghost():
     global xp,yp,xg,yg,vxg,vyg
@@ -105,31 +124,34 @@ def moveghost():
     yg+=vyg
 
 
+def move_pacman():
+    global xp, yp, vxp, vyp, i, j, matr, grid, nvxp, nvyp
+    if (xp-grid//2)%grid == 0 and (yp-grid//2)%grid == 0:
+        vxp = nvxp
+        vyp = nvyp
+    #if matr[(x-grid*0.5)//grid] == '1':
+        #
+    if yp - 15 < 0:
+        yp += 500
+    if yp + 15 > 500:
+        yp -= 500
+    if xp - 15 < 0:
+        xp += 500
+    if xp + 15 > 500:
+        xp -= 500
+    xp += vxp
+    yp += vyp
 
+
+field_read()
 root.bind('<a>', moveleft)
 root.bind('<d>', moveright)
 root.bind('<w>', moveup)
 root.bind('<s>', movedown)
 draw()
-
-
-def move_pacman():
-    global xp, yp, vxp, vyp
-    if yp - 15 < 10:
-        yp += 475
-    if yp + 15 > 500:
-        yp -= 475
-    if xp - 15 < 10:
-        xp += 475
-    if xp + 15 > 500:
-        xp -= 475
-    xp += vxp
-    yp += vyp
-
-
 while 1:
     move_pacman()
-    moveghost()
+   # moveghost()
     if if_game_over():
         game_over()
         break

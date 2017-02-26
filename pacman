@@ -5,21 +5,29 @@ root = Tk()
 canv = Canvas(root, width=700, height=700)
 canv.pack()
 x, y = 150, 150
-vxp, vyp = 0, 0
+vxp, vyp = 1, 0
 xg, yg = 100, 100
 vxg,vyg = 0,0
 grid = 30
 nvxp, nvyp = 0,0
-matr = [['' for h in range(10)] for h in range(10)]
+matr = []
 i,j = 0,0
+temp = []
 
 def field_read():
     global x,y,grid,xp,yp,matr,i,j
     a = open('field.txt', 'r')
+    f = True
     for line in a:
         for symb in line:
-            if symb != '\n':
-                matr[j][i] = symb
+
+            if f:
+                matr.append(symb)
+            else:
+                matr[i] += symb
+
+            #if symb != '\n':
+                #matr[j].append(symb)
             if symb == '1':
                 canv.create_rectangle(i*grid, j*grid, (i+1)*grid, (j+1)*grid, fill="blue", tag = 'solid')
             if symb == '9':
@@ -27,10 +35,18 @@ def field_read():
                 yp = j*grid
                 draw_pac()
             i += 1
+
+        f = False
         i = 0
         j += 1
+
     canv.update()
     a.close()
+
+def return_pos(xp,yp):
+    ip = (xp+15)//grid
+    jp = (yp + 15) // grid
+    return ip,jp
 
 def if_game_over():
     global xg, yg, xp, yp
@@ -84,24 +100,32 @@ def draw():
 
 def moveleft(event):
     global nvxp, nvyp
+    if if_cant_left(xp, yp, -1):
+        return
     nvxp = -1
     nvyp = 0
 
 
 def moveright(event):
     global nvxp, nvyp
+    if if_cant_right(xp, yp, 1):
+        return
     nvxp = 1
     nvyp = 0
 
 
 def moveup(event):
     global nvxp, nvyp
+    if if_cant_up(xp, yp, -1):
+        return
     nvyp = -1
     nvxp = 0
 
 
 def movedown(event):
     global nvxp,nvyp
+    if if_cant_down(xp, yp, 1):
+        return
     nvyp = 1
     nvxp = 0
 
@@ -124,13 +148,40 @@ def moveghost():
     yg+=vyg
 
 
+def if_cant_right(xp, yp, nvxp):
+    ip, jp = return_pos(xp, yp)
+    return nvxp > 0 and ip+1 < len(matr) and matr[ip+1][jp] == '1'
+
+
+def if_cant_left(xp, yp, nvxp):
+    ip, jp = return_pos(xp, yp)
+    return nvxp < 0 and ip>=1 and matr[ip-1][jp] == '1'
+
+
+def if_cant_up(xp, yp, nvyp):
+    ip, jp = return_pos(xp, yp)
+    return nvyp < 0 and jp>=1 and matr[ip][jp-1] == '1'
+
+
+def if_cant_down(xp, yp, nvyp):
+    ip, jp = return_pos(xp, yp)
+    return nvyp > 0 and jp+1 < len(matr[jp]) and matr[ip][jp+1]=='1'
+
+
 def move_pacman():
     global xp, yp, vxp, vyp, i, j, matr, grid, nvxp, nvyp
-    if (xp-grid//2)%grid == 0 and (yp-grid//2)%grid == 0:
+    if (xp+15-grid//2)%grid == 0 and (yp+15-grid//2)%grid == 0:
+        if if_cant_right(xp, yp, nvxp):
+            nvxp = 0
+        if if_cant_left(xp, yp, nvxp):
+            nvxp = 0
+        if if_cant_up(xp, yp, nvyp):
+            nvyp = 0
+        if if_cant_down(xp, yp, nvyp):
+            nvyp = 0
         vxp = nvxp
         vyp = nvyp
-    #if matr[(x-grid*0.5)//grid] == '1':
-        #
+
     if yp - 15 < 0:
         yp += 500
     if yp + 15 > 500:
@@ -149,6 +200,7 @@ root.bind('<d>', moveright)
 root.bind('<w>', moveup)
 root.bind('<s>', movedown)
 draw()
+print(matr)
 while 1:
     move_pacman()
    # moveghost()

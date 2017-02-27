@@ -12,38 +12,76 @@ grid = 30
 nvxp, nvyp = 0,0
 matr = []
 i,j = 0,0
-temp = []
+pos_matri = []
+pr,pd,pl,pu = 0,0,0,0
+
+
+def shortest_route_count():
+    global pos_matri,xp,yp,xg,yg
+
+    ip, jp = return_pos_pac(xp, yp)
+    queue = [[ip,jp]]
+    while len(queue)>0 and i != ip and j != jp:
+        i,j = queue.pop(0)
+
 
 def field_read():
-    global x,y,grid,xp,yp,matr,i,j
+    global x,y,grid,xp,yp,matr,i,j,pos_matri
     a = open('field.txt', 'r')
     f = True
     for line in a:
         for symb in line:
 
             if f:
-                matr.append(symb)
+                matr.append([symb])
             else:
-                matr[i] += symb
+                matr[i].append(symb)
 
             #if symb != '\n':
                 #matr[j].append(symb)
-            if symb == '1':
-                canv.create_rectangle(i*grid, j*grid, (i+1)*grid, (j+1)*grid, fill="blue", tag = 'solid')
-            if symb == '9':
-                xp = i*grid
-                yp = j*grid
-                draw_pac()
+            #if symb == '1':
+                #   canv.create_rectangle(i*grid, j*grid, (i+1)*grid, (j+1)*grid, fill="blue", tag = 'solid')
+            #if symb == '9':
+            #     xp = i*grid
+            #     yp = j*grid
+            #     draw_pac()
             i += 1
 
         f = False
         i = 0
         j += 1
+    j = 0
+    i = 0
+    pos_matri = matr.copy()
 
     canv.update()
     a.close()
 
-def return_pos(xp,yp):
+def field_draw():
+    global pos_matri,xp,yp,i,j,grid
+    for x in pos_matri:
+        for symb in x:
+            if symb == '1':
+                canv.create_rectangle(i * grid, j * grid, (i + 1) * grid, (j + 1) * grid, fill="blue", tag='solid')
+                pos_matri[i][j] = '-1'
+            if symb == '0':
+                pos_matri[i][j] = '-2'
+            if symb == '9':
+                xp = i * grid
+                yp = j * grid
+                draw_pac(xp,yp)
+            j += 1
+        j = 0
+        i+=1
+
+
+def return_pos_ghost(xg,yg):
+    ig = (xg + 15) // grid
+    jg = (yg + 15) // grid
+    return ig, jg
+
+
+def return_pos_pac(xp, yp):
     ip = (xp+15)//grid
     jp = (yp + 15) // grid
     return ip,jp
@@ -68,8 +106,7 @@ def draw_field():
     canv.create_rectangle(0, 0, 500, 500, fill="white", outline="black")
 
 
-def draw_pac():
-    global xp, yp
+def draw_pac(xp,yp):
     canv.delete('pacman')
     canv.create_oval(xp, yp, xp + 30, yp + 30, fill='yellow', tag='pacman')
 
@@ -93,17 +130,20 @@ def draw_ghost(color):
 
 def draw():
     global x, y,xp,yp
-    draw_pac()
+    draw_pac(xp,yp)
     #draw_ghost('green')
     canv.update()
 
 
 def moveleft(event):
-    global nvxp, nvyp
-    if if_cant_left(xp, yp, -1):
-        return
-    nvxp = -1
-    nvyp = 0
+    global nvxp, nvyp,pl
+    pl = 1
+    while pl==1:
+        if if_cant_left(xp, yp, -1):
+            pl = 1
+        nvxp = -1
+        nvyp = 0
+        pl = 0
 
 
 def moveright(event):
@@ -149,23 +189,23 @@ def moveghost():
 
 
 def if_cant_right(xp, yp, nvxp):
-    ip, jp = return_pos(xp, yp)
-    return nvxp > 0 and ip+1 < len(matr) and matr[ip+1][jp] == '1'
+    ip, jp = return_pos_pac(xp, yp)
+    return nvxp > 0 and ip+1 < len(matr) and matr[ip+1][jp] == '-1'
 
 
 def if_cant_left(xp, yp, nvxp):
-    ip, jp = return_pos(xp, yp)
-    return nvxp < 0 and ip>=1 and matr[ip-1][jp] == '1'
+    ip, jp = return_pos_pac(xp, yp)
+    return nvxp < 0 and ip>=1 and matr[ip-1][jp] == '-1'
 
 
 def if_cant_up(xp, yp, nvyp):
-    ip, jp = return_pos(xp, yp)
-    return nvyp < 0 and jp>=1 and matr[ip][jp-1] == '1'
+    ip, jp = return_pos_pac(xp, yp)
+    return nvyp < 0 and jp>=1 and matr[ip][jp-1] == '-1'
 
 
 def if_cant_down(xp, yp, nvyp):
-    ip, jp = return_pos(xp, yp)
-    return nvyp > 0 and jp+1 < len(matr[jp]) and matr[ip][jp+1]=='1'
+    ip, jp = return_pos_pac(xp, yp)
+    return nvyp > 0 and jp+1 < len(matr[jp]) and matr[ip][jp+1]=='-1'
 
 
 def move_pacman():
@@ -193,14 +233,14 @@ def move_pacman():
     xp += vxp
     yp += vyp
 
-
 field_read()
+field_draw()
+print(matr)
 root.bind('<a>', moveleft)
 root.bind('<d>', moveright)
 root.bind('<w>', moveup)
 root.bind('<s>', movedown)
 draw()
-print(matr)
 while 1:
     move_pacman()
    # moveghost()
